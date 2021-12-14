@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">AdapterDelegateExample</string>
+    <string name="booking_colon">Booking:</string>
+    <string name="download">Download</string>
+</resources>
