@@ -8,6 +8,8 @@ import com.example.adapterdelegateexample.databinding.*
 import java.text.SimpleDateFormat
 import java.util.*
 
+// TODO: 14/12/21 Create a separate branch for demoing delegation and conventional way
+
 class BookingDetailsAdapter(
     private val bookingDetailsList: List<IBookingDetails>
 ) :
@@ -130,10 +132,14 @@ class BookingDetailsAdapter(
     class PassengerInfoViewHolder(private val binding: PassengerInfoLayoutBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(passengerInfo: PassengerInfo) {
+
+            val adapter = PassengersAdapter(passengerInfo.passengers)
+
             binding.apply {
                 passengersRecyclerView.setHasFixedSize(true)
                 passengersRecyclerView.layoutManager =
                     LinearLayoutManager(passengersRecyclerView.context)
+                passengersRecyclerView.adapter = adapter
             }
         }
     }
