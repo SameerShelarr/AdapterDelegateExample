@@ -13,6 +13,14 @@ class BookingDetailsAdapter(
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
+    private val bookingInfoAdapterDelegate = BookingInfoAdapterDelegate(BOOKING_INFO_TYPE_INT)
+    private val flightInfoAdapterDelegate = FlightInfoAdapterDelegate(FLIGHT_INFO_TYPE_INT)
+    private val passengerInfoAdapterDelegate = PassengerInfoAdapterDelegate(PASSENGER_INFO_TYPE_INT)
+    private val orderSummaryAdapterDelegate = OrderSummaryAdapterDelegate(ORDER_SUMMARY_TYPE_INT)
+    private val refundAndExchangeAdapterDelegate = RefundAndExchangeAdapterDelegate(
+        REFUND_AND_EXCHANGE_TYPE_INT
+    )
+
     companion object {
         private const val BOOKING_INFO_TYPE_INT = 0
         private const val FLIGHT_INFO_TYPE_INT = 1
@@ -21,69 +29,79 @@ class BookingDetailsAdapter(
         private const val REFUND_AND_EXCHANGE_TYPE_INT = 4
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
-        when (viewType) {
-            0 ->
-                BookingDetailsViewHolder(
-                    BookingInfoLayoutBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    )
-                )
-            1 ->
-                FlightInfoViewHolder(
-                    FlightInfoLayoutBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    )
-                )
-            2 ->
-                PassengerInfoViewHolder(
-                    PassengerInfoLayoutBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    )
-                )
-            3 ->
-                OrderSummaryViewHolder(
-                    OrderSummaryLayoutBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    )
-                )
-            4 ->
-                RefundAndExchangeViewHolder(
-                    RefundAndExchangeLayoutBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    )
-                )
-            else -> throw IllegalArgumentException("Cannot create a View no suitable ViewHolder found!")
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            bookingInfoAdapterDelegate.getViewType() -> {
+                bookingInfoAdapterDelegate.onCreateViewHolder(parent)
+            }
+            flightInfoAdapterDelegate.getViewType() -> {
+                flightInfoAdapterDelegate.onCreateViewHolder(parent)
+            }
+            passengerInfoAdapterDelegate.getViewType() -> {
+                passengerInfoAdapterDelegate.onCreateViewHolder(parent)
+            }
+            orderSummaryAdapterDelegate.getViewType() -> {
+                orderSummaryAdapterDelegate.onCreateViewHolder(parent)
+            }
+            refundAndExchangeAdapterDelegate.getViewType() -> {
+                refundAndExchangeAdapterDelegate.onCreateViewHolder(parent)
+            }
+            else -> {
+                throw IllegalArgumentException("Cannot create a View no suitable ViewHolder found!")
+            }
         }
+    }
 
-
-    override fun getItemViewType(position: Int): Int =
-        when (bookingDetailsList[position]) {
-            is BookingInfo -> BOOKING_INFO_TYPE_INT
-            is FlightInfo -> FLIGHT_INFO_TYPE_INT
-            is PassengerInfo -> PASSENGER_INFO_TYPE_INT
-            is OrderSummary -> ORDER_SUMMARY_TYPE_INT
-            is RefundAndExchange -> REFUND_AND_EXCHANGE_TYPE_INT
-            else -> -1
+    override fun getItemViewType(position: Int): Int {
+        return when {
+            bookingInfoAdapterDelegate.isForViewType(bookingDetailsList, position) -> {
+                bookingInfoAdapterDelegate.getViewType()
+            }
+            flightInfoAdapterDelegate.isForViewType(bookingDetailsList, position) -> {
+                flightInfoAdapterDelegate.getViewType()
+            }
+            passengerInfoAdapterDelegate.isForViewType(bookingDetailsList, position) -> {
+                passengerInfoAdapterDelegate.getViewType()
+            }
+            orderSummaryAdapterDelegate.isForViewType(bookingDetailsList, position) -> {
+                orderSummaryAdapterDelegate.getViewType()
+            }
+            refundAndExchangeAdapterDelegate.isForViewType(bookingDetailsList, position) -> {
+                refundAndExchangeAdapterDelegate.getViewType()
+            }
+            else -> {
+                throw IllegalArgumentException("Cannot create a View no suitable ViewHolder found!")
+            }
         }
+    }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (val currentBookingDetails = bookingDetailsList[position]) {
-            is BookingInfo -> (holder as BookingDetailsViewHolder).bind(currentBookingDetails)
-            is FlightInfo -> (holder as FlightInfoViewHolder).bind(currentBookingDetails)
-            is PassengerInfo -> (holder as PassengerInfoViewHolder).bind(currentBookingDetails)
-            is OrderSummary -> (holder as OrderSummaryViewHolder).bind(currentBookingDetails)
-            is RefundAndExchange -> (holder as RefundAndExchangeViewHolder).bind(currentBookingDetails)
+        when (holder.itemViewType) {
+            bookingInfoAdapterDelegate.getViewType() -> bookingInfoAdapterDelegate.onBindViewHolder(
+                bookingDetailsList,
+                position,
+                holder
+            )
+            flightInfoAdapterDelegate.getViewType() -> flightInfoAdapterDelegate.onBindViewHolder(
+                bookingDetailsList,
+                position,
+                holder
+            )
+            passengerInfoAdapterDelegate.getViewType() -> passengerInfoAdapterDelegate.onBindViewHolder(
+                bookingDetailsList,
+                position,
+                holder
+            )
+            orderSummaryAdapterDelegate.getViewType() -> orderSummaryAdapterDelegate.onBindViewHolder(
+                bookingDetailsList,
+                position,
+                holder
+            )
+            refundAndExchangeAdapterDelegate.getViewType() -> refundAndExchangeAdapterDelegate.onBindViewHolder(
+                bookingDetailsList,
+                position,
+                holder
+            )
             else -> throw IllegalArgumentException("Cannot create a View no suitable ViewHolder found!")
         }
     }
@@ -130,10 +148,14 @@ class BookingDetailsAdapter(
     class PassengerInfoViewHolder(private val binding: PassengerInfoLayoutBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(passengerInfo: PassengerInfo) {
+
+            val adapter = PassengersAdapter(passengerInfo.passengers)
+
             binding.apply {
                 passengersRecyclerView.setHasFixedSize(true)
                 passengersRecyclerView.layoutManager =
                     LinearLayoutManager(passengersRecyclerView.context)
+                passengersRecyclerView.adapter = adapter
             }
         }
     }
